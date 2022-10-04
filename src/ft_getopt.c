@@ -22,7 +22,7 @@ static int getargtype(const char *s) {
 	Returns a pointer to the matched option, or NULL if no match is found
 	
 	An error message is printed if no match is found.
-	TODO: Add an interface to dissble error message e.g. environment variable
+	TODO: Add an interface to diasble error message e.g. environment variable
 */
 static const option_t *findopt(char **av, const int av_type, char *nextchar, int optindex, const option_t *opts) {
 	for (const option_t *o = opts; o->longname != NULL || o->shortname != '\0'; o += 1) {
@@ -61,7 +61,7 @@ static void updoptptrs(char **av, const int av_type, int *oip, char **ncp) {
 	optindex values
 	Returns the argument pointer, or NULL if no argument is present
 */
-char *getoptarg(int ac, char **av, int *oip, char **ncp) {
+static char *getoptarg(int ac, char **av, int *oip, char **ncp) {
 	char *optarg = NULL;
 
 	if (*oip < ac) {
@@ -70,6 +70,34 @@ char *getoptarg(int ac, char **av, int *oip, char **ncp) {
 		*ncp = NULL;
 	}
 	return optarg;
+}
+
+/*
+ 	swaparg put the ith element of av and moves it at the end
+	It keeps a counter of how much items it has moved, so that
+	when i is ac - count, it means that all non option arguments
+	has already been moved
+	Returns 0 if the argument is moved, -1 if all elements has
+	already been moved
+	// TODO: Add an interface to dissble swaping arguments e.g. with an environment variable
+*/
+static int swaparg(int ac, char **av, int i) {
+	static int count = 0;
+	char *tmp;
+
+	// We take ac - 1 else we'll try to swap the last element with itself
+	if (i + count >= ac - 1) 
+		return -1;
+
+	tmp = av[i];
+	while (i < ac - 1) {
+		av[i] = av[i + 1];
+		i++;
+	}
+	av[ac - 1] = tmp;
+
+	count += 1;
+	return 0;
 }
 
 int ft_getopt(int ac, char **av, const char *optstring, char **optarg) {
@@ -85,11 +113,11 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	if (optindex >= ac)
 		return -1;
 
-	av_type = getargtype(av[optindex]);
-	if (av_type == no_opt || av_type == break_opt) {
-		// TODO: reorganize arguments it no_opt, to accept post arg options
-		return -1;
-	}
+	do {
+		av_type = getargtype(av[optindex]);
+		if (av_type == break_opt || (av_type == no_opt && swaparg(ac, av, optindex) < 0))
+			return -1;
+	} while (av_type != short_opt && av_type != long_opt);
 
 	opt = findopt(av, av_type, nextchar, optindex, opts);
 	if (opt == NULL) {
