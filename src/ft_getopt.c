@@ -127,9 +127,9 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	opt = findopt(av, av_type, nextchar, optindex, opts);
 	if (opt == NULL) {
 		if (av_type == short_opt)
-			printf("%s: Invalid short option -- '%c'\n", av[0], av[optindex][1]);
+			printf("%s: Invalid option -- '%c'\n", av[0], av[optindex][1]);
 		else
-			printf("%s: Invalid long option -- '%s'\n", av[0], &av[optindex][2]);
+			printf("%s: Invalid option -- '%s'\n", av[0], &av[optindex][2]);
 	}
 	updoptptrs(av, av_type, &optindex, &nextchar);
 	
@@ -140,6 +140,7 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 				printf("%s: Option requires an argument -- '%c'\n", av[0], av[optindex - 1][1]);
 			else
 				printf("%s: Option requires an argument -- '%s'\n", av[0], &av[optindex - 1][2]);
+			opt = NULL;
 		}
 	}
 	return opt ? opt->shortname : '?';
