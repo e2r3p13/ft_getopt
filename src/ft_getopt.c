@@ -7,7 +7,7 @@
 	isopt checks if @s is a command line option, and of which kind.
 	Returns the option kind
 */
-static int isopt(const char *s) {
+static int getargtype(const char *s) {
 	if (strlen(s) < 2 || s[0] != '-')
 		return no_opt;
 	if (s[1] != '-')
@@ -22,62 +22,54 @@ int ft_getopt(int ac, char **av, const char *optstring, char **optarg) {
 }
 
 int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
-	static int	optind = 1;
+	static int	optindex = 1;
 	static char	*nextchar = NULL;
-	int optc = 0;
+	const option_t *opt = NULL;
+	int av_type;
 
-	// If netxtchar isn't NULL, we are inside a short options list (e.g. -tlnp)
-	if (nextchar != NULL) {
-		for (const option_t *opt = opts; opt->longname != NULL || opt->shortname != 0; opt += 1) {
-			if (opt->shortname == *nextchar) {
-				optc = opt->shortname;
-				break;
-			}
+	if (optindex >= ac)
+		return -1;
+	av_type = getargtype(av[optindex]);
+	if (av_type == no_opt || av_type == break_opt) {
+		// TODO: reorganize arguments it no_opt, to accept post arg options
+		return -1;
+	}
+
+	for (const option_t *o = opts; o->longname != NULL || o->shortname != '\0'; o += 1) {
+		if (av_type == short_opt && ((nextchar == NULL && av[optindex][1] == o->shortname) || (nextchar != NULL && *nextchar == o->shortname))) {
+			opt = o;
+			break;
 		}
-		if (optc == 0)
-			printf("%s: Invalid short (f) option -- '%c'\n", av[0], *nextchar);
-		nextchar++;
-		if (*nextchar == 0) {
+		if (av_type == long_opt && strcmp(&av[optindex][2], o->longname) == 0) {
+			opt = o;
+			break;
+		}
+	}
+
+	if (opt == NULL) {
+		if (av_type == short_opt)
+			printf("%s: Invalid short option -- '%c'\n", av[0], av[optindex][1]);
+		else
+			printf("%s: Invalid long option -- '%s'\n", av[0], &av[optindex][2]);
+	}
+
+	if (av_type == short_opt) {
+		nextchar = nextchar ? nextchar + 1 : &av[optindex][2];
+		if (*nextchar == '\0')
 			nextchar = NULL;
-			optind++;
-		}
-		return optc != 0 ? optc : '?';
+	}
+	if (nextchar == NULL)
+		optindex += 1;
+	
+	if (opt && opt->has_arg) {
+		*optarg = nextchar ? nextchar : av[optindex];
+		optindex += 1;
+		nextchar = NULL;
 	}
 
-	if (optind < ac) {
-		int opt_type = isopt(av[optind]);
-		if (opt_type == long_opt) {
-			for (const option_t *opt = opts; opt->longname != NULL; opt += 1) {
-				if (strcmp(&av[optind][2], opt->longname) == 0) {
-					optc = opt->shortname;
-					break;
-				}
-			}
-			if (optc == 0)
-				printf("%s: Invalid long option -- '%s'\n", av[0], &av[optind][2]);
-			optind++;
-			return optc != 0 ? optc : '?';
-		}
-		if (opt_type == short_opt) {
-			for (const option_t *opt = opts; opt->shortname != 0; opt += 1) {
-				if (opt->shortname == av[optind][1]) {
-					optc = opt->shortname;
-					break;
-				}
-			}
-			if (optc == 0)
-		 		printf("%s: Invalid short option -- '%c'\n", av[0], av[optind][1]);
-			if (av[optind][2] == 0) {
-				optind++;
-				nextchar = NULL;
-			} else {
-				nextchar = &av[optind][2];
-			}
-			return optc != 0 ? optc : '?';
-		}
-	}
-	return -1;
+	return opt ? opt->shortname : '?';
 }
+
 
 int main(int ac, char **av) {
 	option_t opts[] = {
@@ -115,6 +107,9 @@ int main(int ac, char **av) {
 			break;
 		case 'q':
 			printf("-q\n");
+			break;
+		case '?':
+			printf("Usage: ...\n");
 			break;
 		}
 	}
