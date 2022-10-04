@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022 lfalkau
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef FT_GETOPT_H
 #define FT_GETOPT_H
 
@@ -15,7 +18,6 @@ typedef struct option {
 	int			has_arg;
 } option_t;
 
-int ft_getopt(int ac, char **av, const char *optstring, char **optarg);
 int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg);
 
 #endif

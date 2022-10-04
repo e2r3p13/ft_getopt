@@ -1,18 +1,27 @@
-#include <string.h>
+// SPDX-FileCopyrightText: 2022 lfalkau
+// SPDX-License-Identifier: Apache-2.0
+
+#include <ft_string.h>
 #include <ft_getopt.h>
 #include <stdio.h>
 #include <unistd.h>
+
+/*
+   getoptft library implements a custom version of ft_getopt_long.
+   It doesn't make use of global variables, and use custom version
+   of some basic functions, to match the 42 school rules.
+*/
 
 /*
 	isopt checks if @s is a command line option, and of which kind
 	Returns the option kind
 */
 static int getargtype(const char *s) {
-	if (strlen(s) < 2 || s[0] != '-')
+	if (ft_strlen(s) < 2 || s[0] != '-')
 		return no_opt;
 	if (s[1] != '-')
 		return short_opt;
-	if (strlen(s) > 2)
+	if (ft_strlen(s) > 2)
 		return long_opt;
 	return break_opt;
 }
@@ -29,7 +38,7 @@ static const option_t *findopt(char **av, const int av_type, char *nextchar, int
 		if (av_type == short_opt && ((nextchar == NULL && av[optindex][1] == o->shortname) || (nextchar != NULL && *nextchar == o->shortname))) {
 			return o;
 		}
-		if (av_type == long_opt && strcmp(&av[optindex][2], o->longname) == 0) {
+		if (av_type == long_opt && ft_strcmp(&av[optindex][2], o->longname) == 0) {
 			return o;
 		}
 	}
@@ -100,10 +109,6 @@ static int swaparg(int ac, char **av, int i) {
 	return 0;
 }
 
-int ft_getopt(int ac, char **av, const char *optstring, char **optarg) {
-	return -1;
-}
-
 int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	static int optindex = 1;
 	static char	*nextchar = NULL;
@@ -138,50 +143,4 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 		}
 	}
 	return opt ? opt->shortname : '?';
-}
-
-int main(int ac, char **av) {
-	option_t opts[] = {
-		{"verbose",		'v',	no_argument},
-		{"help",		'h',	no_argument},
-		{"count",		'c',	required_argument},
-		{"timestamp",	'D',	no_argument},
-		{"flood",		'f',	no_argument},
-		{"interval",	'i',	required_argument},
-		{"quiet",		'q',	no_argument},
-		{NULL,			'\0',	no_argument},
-	};
-	int opt;
-	char *optarg;
-
-	while ((opt = ft_getopt_long(ac, av, opts, &optarg)) != -1) {
-		switch (opt) {
-		case 'v':
-			printf("-v\n");
-			break;
-		case 'h':
-			printf("-h\n");
-			break;
-		case 'c':
-			printf("-c: %s\n", optarg);
-			break;
-		case 'D':
-			printf("-D\n");
-			break;
-		case 'f':
-			printf("-f\n");
-			break;
-		case 'i':
-			printf("-i: %s\n", optarg);
-			break;
-		case 'q':
-			printf("-q\n");
-			break;
-		case '?':
-			printf("Usage: ...\n");
-			break;
-		}
-		// sleep(1);
-	}
-
 }
