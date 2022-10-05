@@ -112,6 +112,8 @@ static int swaparg(int ac, char **av, int i) {
 int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	static int optindex = 1;
 	static char	*nextchar = NULL;
+	int tmpoptindex;
+	char *tmpnextchar;
 	const option_t	*opt = NULL;
 	int av_type;
 
@@ -131,13 +133,15 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 		else
 			printf("%s: Invalid option -- '%s'\n", av[0], &av[optindex][2]);
 	}
+	tmpoptindex = optindex;
+	tmpnextchar = nextchar;
 	updoptptrs(av, av_type, &optindex, &nextchar);
 	
 	if (opt && opt->has_arg) {
 		*optarg = getoptarg(ac, av, &optindex, &nextchar);
 		if (*optarg == NULL) {
 			if (av_type == short_opt)
-				printf("%s: Option requires an argument -- '%c'\n", av[0], av[optindex - 1][1]);
+				printf("%s: Option requires an argument -- '%c'\n", av[0], tmpnextchar ? *tmpnextchar : av[tmpoptindex - 1][1]);
 			else
 				printf("%s: Option requires an argument -- '%s'\n", av[0], &av[optindex - 1][2]);
 			opt = NULL;
