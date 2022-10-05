@@ -109,6 +109,16 @@ static int swaparg(int ac, char **av, int i) {
 	return 0;
 }
 
+/*
+	ft_getopt_long parses command line arguments. It returns the next option to
+	be proceeded during successive calls. Also set the optarg pointer if the option
+	requires an argument.
+	See https://www.man7.org/linux/man-pages/man3/getopt.3.html for more details
+	WARN: ft_getopt_long doesn't work exactly as the getopt_long function
+
+	Returns the negative count of the next argument to process when no option remains,
+	the ascii value of the parsed option otherwise
+*/
 int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	static int optindex = 1;
 	static char	*nextchar = NULL;
@@ -118,12 +128,12 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	int av_type;
 
 	if (optindex >= ac)
-		return -1;
+		return -optindex;
 
 	do {
 		av_type = getargtype(av[optindex]);
 		if (av_type == break_opt || (av_type == no_opt && swaparg(ac, av, optindex) < 0))
-			return -1;
+			return -optindex;
 	} while (av_type != short_opt && av_type != long_opt);
 
 	opt = findopt(av, av_type, nextchar, optindex, opts);
