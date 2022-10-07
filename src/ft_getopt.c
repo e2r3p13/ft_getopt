@@ -133,7 +133,7 @@ int ft_getopt_long(int ac, char **av, const option_t *opts, char **optarg) {
 	do {
 		av_type = getargtype(av[optindex]);
 		if (av_type == break_opt || (av_type == no_opt && swaparg(ac, av, optindex) < 0))
-			return -optindex;
+			return -optindex - (av_type == break_opt);
 	} while (av_type != short_opt && av_type != long_opt);
 
 	opt = findopt(av, av_type, nextchar, optindex, opts);
