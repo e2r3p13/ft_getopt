@@ -34,12 +34,14 @@ static int getargtype(const char *s) {
 	TODO: Add an interface to diasble error message e.g. environment variable
 */
 static const option_t *findopt(char **av, const int av_type, char *nextchar, int optindex, const option_t *opts) {
-	for (const option_t *o = opts; o->longname != NULL || o->shortname != '\0'; o += 1) {
-		if (av_type == short_opt && ((nextchar == NULL && av[optindex][1] == o->shortname) || (nextchar != NULL && *nextchar == o->shortname))) {
-			return o;
+	for (const option_t *o = opts; o->longname || o->shortname; o += 1) {
+		if (av_type == short_opt && o->shortname) {
+			if ((nextchar == NULL && av[optindex][1] == o->shortname) || (nextchar != NULL && *nextchar == o->shortname))
+				return o;
 		}
-		if (av_type == long_opt && ft_strcmp(&av[optindex][2], o->longname) == 0) {
-			return o;
+		if (av_type == long_opt && o->longname) {
+			if (ft_strcmp(&av[optindex][2], o->longname) == 0)
+				return o;
 		}
 	}
 	return NULL;
@@ -88,7 +90,7 @@ static char *getoptarg(int ac, char **av, int *oip, char **ncp) {
 	has already been moved
 	Returns 0 if the argument is moved, -1 if all elements has
 	already been moved
-	// TODO: Add an interface to dissble swaping arguments e.g. with an environment variable
+	// TODO: Add an interface to disable arguments swapping e.g. with an environment variable
 */
 static int swaparg(int ac, char **av, int i) {
 	static int count = 0;
